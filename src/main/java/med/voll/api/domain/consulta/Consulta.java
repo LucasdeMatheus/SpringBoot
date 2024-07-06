@@ -31,6 +31,7 @@ public class Consulta {
     @JoinColumn(name = "paciente_id")
     private Paciente paciente;
 
+    @Column(nullable = false)
     private LocalDateTime data;
 
 
@@ -40,6 +41,12 @@ public class Consulta {
     private MotivoCancelamento motivoCancelamento;
 
     public Consulta(Object o, Medico medico, Paciente paciente, LocalDateTime data) {
+        if (data == null) {
+            throw new IllegalArgumentException("Data da consulta não pode ser nula");
+        }
+        this.medico = medico;
+        this.paciente = paciente;
+        this.data = data;
     }
 
     public void cancelar(MotivoCancelamento motivo) {

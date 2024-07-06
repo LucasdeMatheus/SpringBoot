@@ -16,11 +16,11 @@ import org.springframework.test.context.ActiveProfiles;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @ActiveProfiles("test")
@@ -33,7 +33,7 @@ class MedicoRepositoryTest {
 
     @Test
     @DisplayName("Deveria devolver null quando unico medico cadastrado nao esta disponivel na data")
-    void escolherMedicoAleatorioLivreNaDataCenario1(){
+    void escolherMedicoAleatorioLivreNaDataCenario1() {
         var proximaSegundaAs10 = LocalDate.now()
                 .with(TemporalAdjusters.next(DayOfWeek.MONDAY))
                 .atTime(10, 0);
@@ -42,12 +42,29 @@ class MedicoRepositoryTest {
         var paciente = cadastrarPaciente("Paciente", "paciente@email.com", "00000000000");
         cadastrarConsulta(medico, paciente, proximaSegundaAs10);
 
-        var medicoLivre = medicoRepository.EscolherMedicoAleatorioLivreNaData(Especialidade.CARDIOLOGIA, proximaSegundaAs10);
+        var medicoLivre = medicoRepository.escolherMedicoAleatorioLivreNaData(Especialidade.CARDIOLOGIA, proximaSegundaAs10);
         assertThat(medicoLivre).isNull();
     }
+    @Test
+    @DisplayName("Deveria devolver medico esta disponivel na data")
+    void escolherMedicoAleatorioLivreNaDataCenario2() {
+        // given ou arrange
+        var proximaSegundaAs10 = LocalDate.now()
+                .with(TemporalAdjusters.next(DayOfWeek.MONDAY))
+                .atTime(10, 0);
 
+        // when ou act
+        var medico = cadastrarMedico("Medico", "medico@voll.med", "123456", Especialidade.CARDIOLOGIA);
+        var medicoLivre = medicoRepository.escolherMedicoAleatorioLivreNaData(Especialidade.CARDIOLOGIA, proximaSegundaAs10);
+
+        // then ou assert
+        assertThat(medicoLivre).isEqualTo(medico);
+    }
 
     private void cadastrarConsulta(Medico medico, Paciente paciente, LocalDateTime data) {
+        if (data == null) {
+            throw new IllegalArgumentException("Data da consulta não pode ser nula");
+        }
         em.persist(new Consulta(null, medico, paciente, data));
     }
 
@@ -64,35 +81,14 @@ class MedicoRepositoryTest {
     }
 
     private DadosCadastroMedico dadosMedico(String nome, String email, String crm, Especialidade especialidade) {
-        return new DadosCadastroMedico(
-                nome,
-                email,
-                "61999999999",
-                crm,
-                especialidade,
-                dadosEndereco()
-        );
+        return new DadosCadastroMedico(nome, email, "61999999999", crm, especialidade, dadosEndereco());
     }
 
     private DadosCadastroPaciente dadosPaciente(String nome, String email, String cpf) {
-        return new DadosCadastroPaciente(
-                nome,
-                email,
-                "61999999999",
-                cpf,
-                dadosEndereco()
-        );
+        return new DadosCadastroPaciente(nome, email, "61999999999", cpf, dadosEndereco());
     }
 
     private DadosEndereco dadosEndereco() {
-        return new DadosEndereco(
-                "rua xpto",
-                "bairro",
-                "00000000",
-                "Brasilia",
-                "DF",
-                null,
-                null
-        );
+        return new DadosEndereco("rua xpto", "bairro", "00000000", "Brasilia", "DF", null, null);
     }
 }

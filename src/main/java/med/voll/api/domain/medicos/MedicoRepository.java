@@ -27,7 +27,7 @@ public interface MedicoRepository extends JpaRepository<Medico, Long> {
                 c.motivoCancelamento is null
             )
             """)
-    Medico EscolherMedicoAleatorioLivreNaData(@Param("especialidade") Especialidade especialidade, @Param("data") LocalDateTime data);
+    Medico escolherMedicoAleatorioLivreNaData(@Param("especialidade") Especialidade especialidade, @Param("data") LocalDateTime data);
 
     @Query("""
             select m.ativo
